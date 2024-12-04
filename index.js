@@ -110,7 +110,7 @@ async function TokenAdd() {
                 type: 'ERC20',
                 options: {
                     address: ADDRESS20,
-                    symbol: 'KIMCHI',
+                    symbol: 'SPONGE',
                     decimals: 18,
                     image: 'https://rt-ctrl.github.io/spongeWeb/Sponge.png',
                 },
