@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <title>Token Admin Page</title>
+    <script src="https://cdn.jsdelivr.net/gh/ethereum/web3.js/dist/web3.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/ethers/dist/ethers.min.js"></script>
+    <script type="text/javascript" src="smartcontract.js"></script>
+    <script type="text/javascript" src="index.js"></script>
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+    <div class="container">
+        <h1>Token <br> SpongeBob Admin Page</h1>
+        <button class="btn-tokenadd" onclick="TokenAdd()">토큰 메타마스크 추가</button><br><br>
+
+        <button class="btn-connect-wallet" onclick="connectWallet()">지갑 연결</button>
+        <p id="walletAddress">지갑 주소: 연결되지 않음</p>
+        <p id="walletBalance">이더리움 잔고: - </p>
+        <p id="tokenBalance">SPONGE 토큰 잔고: - </p>
+        <p> * 모든건 메인 지갑으로만 작동하세요! <br>
+            * 메인 지갑이 아닐시 보안을 위해 작동 안하는 함수가 있습니다. <br>
+            * 모든 수량은 18진수를 입력하지 않게 자동으로 계산할 수 있게 만들었습니다. <br>
+            * 토큰 수량 입력칸에 숫자 1은 토큰 1개입니다.<br>
+            * 회색, 초록, 주황 버튼: 트랜잭션을 발생시키지 않으며 자유롭게 클릭하셔도 됩니다.<br>
+            * 파란, 빨강 버튼: 트랜잭션을 발생시키며, 가스비가 소요됩니다. 특히 빨강 버튼은 자주 쓰지 않습니다.<br>
+        </p>
+        <div class="form-group">
+            <label for="balanceAddress">다른 지갑 주소의 잔고 확인</label>
+            <input type="text" id="balanceAddress" placeholder="지갑 주소 입력">
+            <button class="btn-secondary" onclick="checkBalance()">잔고 확인</button>
+            <p id="balanceResult"></p>
+        </div>
+        <div class="category">
+            <h2 onclick="toggleCategory(this)">이더스캔 바로가기 &#9662;</h2>
+            <div class="category-content">
+                <div class="form-group">
+                    <a href="https://polygonscan.com/address/0xF89fb5873F4dC543a0CAEa42B8Ea12424bE140a0"
+                        target="_blank" class="btn-yellow">전체 트랜잭션</a>
+                </div>
+                <div class="form-group">
+                    <a href="https://polygonscan.com//token/0xF89fb5873F4dC543a0CAEa42B8Ea12424bE140a0"
+                        target="_blank" class="btn-yellow">토큰 트래커</a>
+                </div>
+                <div class="form-group">
+                    <a href="https://polygonscan.com//token/0xF89fb5873F4dC543a0CAEa42B8Ea12424bE140a0#balances"
+                        target="_blank" class="btn-yellow">전체 홀더 랭킹</a>
+                </div>
+                <p>
+                    ※ 토큰 트래커: 스마트 컨트랙트의 전체적인 트랜잭션을 볼 수 있는 이더스캔 링크입니다.<br>
+                    ※ 전체 홀더 랭킹: 각 지갑마다 몇개의 토큰을 소유하고 있는지 확인할 수 있는 이더스캔 링크입니다.<br>
+                </p>
+            </div>
+        </div>
+        <div class="category">
+            <h2 onclick="toggleCategory(this)">전송 &#9662;</h2>
+            <div class="category-content">
+                <div class="form-group">
+                    <label>일반 전송</label>
+                    <input type="text" id="transferAddress" placeholder="지갑 주소 입력">
+                    <input type="text" id="transferAmount" placeholder="금액 입력">
+                    <button class="btn-primary" onclick="transfer()">전송</button>
+                    <p id="transferResult"></p>
+                </div>
+                <p>
+                    ※ 일반 전송: 누구나 사용 가능하며, 받을 지갑 주소와 원하는 토큰량을 입력하여 전송을 누르면 됩니다.<br>
+                </p>
+            </div>
+        </div>
+
+        <div class="category">
+            <h2 onclick="toggleCategory(this)">발행 &#9662;</h2>
+            <div class="category-content">
+                <div class="form-group">
+                    <label>일반 발행</label>
+                    <input type="text" id="mintAddress" placeholder="주소 입력">
+                    <input type="text" id="mintAmount" placeholder="금액 입력">
+                    <button class="btn-primary" onclick="mint()">민트</button>
+                    <p id="MintResult"></p>
+                    <p>
+                        ※ 일반 발행: 새로운 토큰을 생성하는 곳입니다. 받을 주소와 수량을 입력하면 됩니다.<br>
+                        ※ 받을 주소는 Minter 지갑 주소가 아니어도 어느 지갑이나 발행(전송) 받을 수 있습니다.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <div class="category">
+            <h2 onclick="toggleCategory(this)">소각 &#9662;</h2>
+            <div class="category-content">
+                <div class="form-group">
+                    <label>내 지갑 소각</label>
+                    <input type="text" id="burnAmount" placeholder="금액 입력">
+                    <button class="btn-primary" onclick="burn()">소각</button>
+                    <p id="burnResult"></p>
+                </div>
+                <div class="form-group">
+                    <label>다른 지갑 소각</label>
+                    <input type="text" id="burnFromAddress" placeholder="지갑 주소 입력">
+                    <input type="text" id="burnFromAmount" placeholder="금액 입력">
+                    <button class="btn-primary" onclick="burnFrom()">소각</button>
+                    <p id="burnFromResult"></p>
+                </div>
+                <p>
+                    ※ 내 지갑 소각: 함수를 호출하는 지갑 안의 SPONGE를 소각합니다.<br>
+                    ※ 다른 지갑 소각: 다른 지갑 안의 SPONGE를 소각합니다.<br>
+                </p>
+            </div>
+        </div>
+        
+        <div class="category">
+            <h2 onclick="toggleCategory(this)">정지 &#9662;</h2>
+            <div class="category-content">
+                <div class="form-group">
+                    <button class="btn-secondary" onclick="checkPaused()">현재 정지 상태</button>
+                    <p id="pauseNow"></p>
+                </div>
+                <div class="form-group">
+                    <button class="btn-danger" onclick="pauseContract()">계약 정지</button>
+                    <p id="pauseResult"></p>
+                </div>
+                <div class="form-group">
+                    <button class="btn-danger" onclick="unpauseContract()">계약 정지 해제</button>
+                    <p id="pauseResult"></p>
+                </div>
+                <p>
+                    ※ 현재 정지 상태: 정상 또는 정지가 출력됩니다.<br>
+                    ※ 계약 정지: 토큰 정지 기능으로 업데이트 또는 문제가 생겼을 시 호출합니다.<br>
+                    ※ 계약 정지 해제: 토큰 정지 해제 기능으로 업데이트 또는 문제를 해결했을 시 호출합니다.<br>
+                </p>
+            </div>
+        </div>
+        
+        <div class="category">
+            <h2 onclick="toggleCategory(this)">락업 &#9662;</h2>
+            <div class="category-content">
+                <div class="form-group">
+                    <label>락업</label>
+                    <input type="text" id="lockupAddress" placeholder="지갑 주소 입력">
+                    <input type="text" id="lockupMin" placeholder="락업할 분당 시간 입력">
+                    <input type="text" id="lockupAmount" placeholder="수량 입력">
+                    <button class="btn-primary" onclick="setLockup()">락업</button>
+                    <p id="lockupResult"></p>
+                </div>
+                <p>
+                    ※ 락업: 락업 할 지갑 주소와 분 단위를 입력하고 원하는 토큰량을 입력하여 락업을 누르면 됩니다.<br>
+                    ※ 락업: 10은 10분입니다.<br>
+                    ※ 주의 사항: 100개를 락업 후 추가로 100개를 락업하려면 초기화가 되기 때문에 200개를 입력하셔야 합니다.<br>
+                </p>
+            </div>
+        </div>
+        
+        <div class="category">
+            <h2 onclick="toggleCategory(this)">락업 해제 &#9662;</h2>
+            <div class="category-content">
+                <div class="form-group">
+                    <label>락업 해제</label>
+                    <input type="text" id="releaseLockupAddress" placeholder="지갑 주소 입력">
+                    <input type="text" id="releaseLockupAmount" placeholder="수량 입력">
+                    <button class="btn-primary" onclick="releaseLockup()">락업 해제</button>
+                    <p id="releaseLockupResult"></p>
+                </div>
+                <p>
+                    ※ 락업 해제: 락업 해제할 지갑 주소와 수량을 입력하시면 됩니다.<br>
+                    ※ 락업이 10000개가 되어있고 100개를 해제하면 9900개는 여전히 락업됩니다.<br>
+                </p>
+            </div>
+        </div>
+
+        <div class="category">
+            <h2 onclick="toggleCategory(this)">락업된 물량 확인 &#9662;</h2>
+            <div class="category-content">
+                <div class="form-group">
+
+                    <input type="text" id="checklockupAddress" placeholder="지갑 주소 입력">
+                    <button class="btn-secondary" onclick="checklockupSupply()">락업 물량 확인</button>
+                    <p id="checklockupResult"></p>
+                    <p id="timechecklockupResult"></p>
+                </div>
+                <p>
+                    ※ 락업 물량 확인: 확인하고 싶은 주소를 입력하면 됩니다.<br>
+                </p>
+            </div>
+        </div>
+
+        <div class="category">
+            <h2 onclick="toggleCategory(this)">발행량 확인 &#9662;</h2>
+            <div class="category-content">
+                <div class="form-group">
+                    <button class="btn-secondary" onclick="checkTotalSupply()">전체 발행량 확인</button>
+                    <p id="totalSupplyResult"></p>
+                </div>
+                <p>
+                    ※ 전체 발행량 확인: 현재까지 발행된 토큰 개수를 출력합니다.<br>
+                </p>
+            </div>
+        </div>
+</body>
+
+</html>
