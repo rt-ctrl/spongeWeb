@@ -99,32 +99,28 @@ async function checkTokenBalance(address) {
 }
 
 async function TokenAdd() {
+    if (!ethereum.selectedAddress) {
+        await connectWallet();
+    }
+
     try {
-        // Metamask에 연결된 지갑이 없다면 connectWallet 함수 호출
-        if (!ethereum.selectedAddress) {
-            await connectWallet();
-        }
-
-        // Metamask에 추가할 토큰 정보
-        const tokenInfo = {
-            type: "ERC20", // 토큰 종류 (ERC20, BEP20 등)
-            options: {
-                address: ADDRESS20, // 토큰의 스마트 컨트랙트 주소
-                symbol: "SPONGE", // 토큰 심볼 (예: ETH, DAI)
-                decimals: 18, // 토큰의 소수점 자리수
-                image: 'https://rt-ctrl.github.io/spongeWeb/Sponge.png'
-            },
-        };
-
-        // Metamask에 토큰 추가 요청
-        await ethereum.request({
+        const wasAdded = await window.ethereum.request({
             method: 'wallet_watchAsset',
-            params: tokenInfo,
+            params: {
+                type: 'ERC20',
+                options: {
+                    address: ADDRESS20,
+                    symbol: 'KIMCHI',
+                    decimals: 18,
+                    image: 'https://rt-ctrl.github.io/spongeWeb/Sponge.png',
+                },
+            },
         });
 
-        alert("토큰이 메타마스크에 추가되었습니다.");
+        if (wasAdded) {
+            alert("토큰이 메타마스크에 추가되었습니다.");
+        }
     } catch (error) {
-        console.error("토큰 추가 오류:", error);
         alert("토큰 추가에 실패했습니다. 메타마스크 설정을 확인해주세요.");
     }
 }
