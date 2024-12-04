@@ -112,7 +112,7 @@ async function TokenAdd() {
                 address: ADDRESS20, // 토큰의 스마트 컨트랙트 주소
                 symbol: "SPONGE", // 토큰 심볼 (예: ETH, DAI)
                 decimals: 18, // 토큰의 소수점 자리수
-                image: 'https://rt-ctrl.github.io/spongeWeb/Sponge.png',
+                image: 'https://rt-ctrl.github.io/spongeWeb/Sponge.png'
             },
         };
 
